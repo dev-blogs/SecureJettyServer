@@ -1,0 +1,47 @@
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'war'
+apply plugin: 'jetty'
+
+repositories {
+	mavenCentral()
+}
+
+List jetty_libraries = ['org.eclipse.jetty:jetty-webapp:9.1.3.v20140225',
+	'org.eclipse.jetty:jetty-server:9.1.3.v20140225',
+	'org.eclipse.jetty.websocket:websocket-server:9.1.3.v20140225'
+]
+
+configurations {
+    embeddedJetty
+}
+
+dependencies {
+	embeddedJetty jetty_libraries
+}
+
+dependencies {
+	compile jetty_libraries
+	compile 'org.springframework:spring-web:3.2.7.RELEASE'
+	compile 'org.apache.cxf:cxf-rt-frontend-jaxrs:3.0.0-milestone1'
+	testCompile 'junit:junit:4.11'
+}
+
+mainClassName = "com.dev_blogs.JettyServer.JettyStarter"
+
+war {
+	from {
+		configurations.embeddedJetty.collect {
+			project.zipTree(it)
+		}
+    }
+	exclude "META-INF/*.SF", "META-INF/*.RSA", "about.html", "about_files/**", "readme.txt", "plugin.properties", "jetty-dir.css", "META-INF/maven/org.eclipse.jetty/*/pom.*"
+	from "$buildDir/classes/main"
+	manifest {
+		attributes (
+			'Main-Class': 'com.dev_blogs.JettyServer.JettyStarter',
+			'Manifest-Version': '1.0',
+			'Gradle-Version': 'Gradle 1.7'
+		)
+	}
+}
